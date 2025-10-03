@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
 });
 
 export async function POST(req: NextRequest) {
@@ -29,9 +30,9 @@ export async function POST(req: NextRequest) {
       }
     ];
 
-    // Get response from OpenAI
+    // Get response from OpenRouter
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "x-ai/grok-4-fast:free",
       messages,
       max_tokens: 1000,
       temperature: 0.7,

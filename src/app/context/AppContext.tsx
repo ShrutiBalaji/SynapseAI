@@ -280,7 +280,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const sendMessage = async (message: string, problemId?: number, conversationId?: number, attachedFiles?: File[]) => {
     setIsLoading(true);
     try {
-      let uploadedFiles = [];
+      const uploadedFiles = [];
       
       // If there are attached files, upload them first
       if (attachedFiles && attachedFiles.length > 0) {

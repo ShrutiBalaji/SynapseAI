@@ -1,10 +1,10 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { useApp } from "./context/AppContext";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 
-export default function Home() {
+function HomeContent() {
 	const [message, setMessage] = useState("");
 	const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -295,5 +295,13 @@ export default function Home() {
 				</form>
 			</div>
 		</div>
+	);
+}
+
+export default function Home() {
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<HomeContent />
+		</Suspense>
 	);
 }

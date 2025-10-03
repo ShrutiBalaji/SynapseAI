@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
 import { join } from "path";
+import { promises as fs } from "fs";
 
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
@@ -25,9 +26,6 @@ export async function POST(req: NextRequest) {
 
     // Use a default user ID since authentication is removed
     const userId = "00000000-0000-0000-0000-000000000000";
-    const isGuest = false;
-    const user = { id: userId, email: "user@example.com" };
-    
     console.log("Using default user:", userId);
 
     const supabase = createClient(
@@ -74,8 +72,7 @@ export async function POST(req: NextRequest) {
           console.log(`Reading file: ${file.name} from path: ${filePath}`);
           
           // Check if file exists
-          const fs = require('fs');
-          const fileExists = fs.existsSync(filePath);
+          const fileExists = await fs.access(filePath).then(() => true).catch(() => false);
           console.log(`File exists: ${fileExists}`);
           
           if (!fileExists) {
@@ -95,7 +92,7 @@ export async function POST(req: NextRequest) {
             console.log(`PDF file detected: ${file.name}`);
           } else if (['txt', 'md', 'json', 'csv', 'log', 'js', 'ts', 'html', 'css', 'xml', 'yaml', 'yml'].includes(fileExtension || '')) {
             // Read text files as UTF-8
-            fileContent = await fs.promises.readFile(filePath, 'utf-8');
+            fileContent = await fs.readFile(filePath, 'utf-8');
             console.log(`File content length: ${fileContent.length} characters`);
           } else {
             // For other file types, indicate they were attached but can't be read
@@ -177,10 +174,10 @@ export async function POST(req: NextRequest) {
     Be helpful, concise, and encourage critical thinking. If the user seems to be describing a new problem, 
     you can help them think through it systematically.`;
 
-    const messages = [
+    const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
       { role: 'system', content: systemPrompt },
       ...(conversationHistory || []).map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'assistant',
+        role: (msg.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
         content: msg.content
       }))
     ];
@@ -189,7 +186,7 @@ export async function POST(req: NextRequest) {
 
     const completion = await openai.chat.completions.create({
       model: "x-ai/grok-4-fast:free",
-      messages: messages as any,
+      messages: messages,
       max_tokens: 1000,
       temperature: 0.7,
     });

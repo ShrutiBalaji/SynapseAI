@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { writeFile } from "fs/promises";
+import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
+import { existsSync } from "fs";
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,9 +31,8 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(bytes);
     
     // Ensure directory exists
-    const fs = require('fs');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    if (!existsSync(uploadsDir)) {
+      await mkdir(uploadsDir, { recursive: true });
     }
     
     await writeFile(filePath, buffer);
